@@ -98,6 +98,11 @@ elitsliderv = uicontrol(ph,'Style','text','String',round(ELITIST*100),'Position'
 crossover = uicontrol(ph,'Style','popupmenu', 'String',{'xalt_edges'}, 'Value',1,'Position',[10 50 130 20],'Callback',@crossover_Callback);
 %inputbutton = uicontrol(ph,'Style','pushbutton','String','Input','Position',[55 10 70 30],'Callback',@inputbutton_Callback);
 runbutton = uicontrol(ph,'Style','pushbutton','String','START','Position',[0 10 50 30],'Callback',@runbutton_Callback);
+autorunbutton = uicontrol(ph,'Style','pushbutton','String','AUTO_START','Position',[340 10 100 30],'Callback',@autorunbutton_Callback);
+numberOfRunsfield = uicontrol(ph,'Style','edit','Position',[300 10 30 30]);
+uicontrol(numberOfRunsfield);
+testNamefield = uicontrol(ph,'Style','edit','Position',[60 10 230 30]);
+set(testNamefield,'string','Description of AUTO_RUN-test');
 
 set(fh,'Visible','on');
 
@@ -179,6 +184,20 @@ set(fh,'Visible','on');
         set(crossslider,'Visible','off');
         set(elitslider,'Visible','off');
         run_ga(x, y, NIND, MAXGEN, NVAR, ELITIST, STOP_PERCENTAGE, PR_CROSS, PR_MUT, CROSSOVER, LOCALLOOP, ah1, ah2, ah3);
+        end_run();
+    end
+    function autorunbutton_Callback(hObject,eventdata)
+        %set(ncitiesslider, 'Visible','off');
+        set(nindslider,'Visible','off');
+        set(genslider,'Visible','off');
+        set(mutslider,'Visible','off');
+        set(crossslider,'Visible','off');
+        set(elitslider,'Visible','off');
+        
+        for iterator = 1:str2double(get(numberOfRunsfield, 'String'))
+            fprintf('AUTO_RUN, iterator is equal to %s\n',num2str(iterator))
+            run_ga(x, y, NIND, MAXGEN, NVAR, ELITIST, STOP_PERCENTAGE, PR_CROSS, PR_MUT, CROSSOVER, LOCALLOOP, ah1, ah2, ah3);
+        end
         end_run();
     end
     function inputbutton_Callback(hObject,eventdata)
