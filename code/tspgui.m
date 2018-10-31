@@ -63,11 +63,23 @@ fh = figure('Visible','off','Name','TSP Tool','Position',[0,0,1024,768]);
 ah1 = axes('Parent',fh,'Position',[.1 .55 .4 .4]);
 plot(x,y,'ko')
 ah2 = axes('Parent',fh,'Position',[.55 .55 .4 .4]);
-axes(ah2);
+
+%PDP: The axes command below steals the focus. However we're now in the
+%gui-constructing phase, so it doesn't really matter a lot.
+%axes(ah2); %instead use:
+set(0,'currentFigure',fh) 
+set(fh,'currentAxes',ah2)
+
 xlabel('Generation');
 ylabel('Distance (Min. - Gem. - Max.)');
 ah3 = axes('Parent',fh,'Position',[.1 .1 .4 .4]);
-axes(ah3);
+
+%PDP: The axes command below steals the focus. However we're now in the
+%gui-constructing phase, so it doesn't really matter a lot.
+%axes(ah3); %instead use:
+set(0,'currentFigure',fh) 
+set(fh,'currentAxes',ah3)
+
 title('Histogram');
 xlabel('Distance');
 ylabel('Number');
@@ -100,7 +112,7 @@ crossover = uicontrol(ph,'Style','popupmenu', 'String',{'xalt_edges'}, 'Value',1
 runbutton = uicontrol(ph,'Style','pushbutton','String','START','Position',[0 10 50 30],'Callback',@runbutton_Callback);
 autorunbutton = uicontrol(ph,'Style','pushbutton','String','AUTO_START','Position',[340 10 100 30],'Callback',@autorunbutton_Callback);
 numberOfRunsfield = uicontrol(ph,'Style','edit','Position',[300 10 30 30]);
-uicontrol(numberOfRunsfield);
+set(numberOfRunsfield,'string','3');
 testNamefield = uicontrol(ph,'Style','edit','Position',[60 10 230 30]);
 set(testNamefield,'string','Description of AUTO_RUN-test');
 
@@ -116,8 +128,11 @@ set(fh,'Visible','on');
         %x=data(:,1);y=data(:,2);
         NVAR=size(data,1); 
         set(ncitiessliderv,'String',size(data,1));
-        axes(ah1);
+        %axes(ah1);
+        set(0,'currentFigure',fh) 
+        set(fh,'currentAxes',ah1)
         plot(x,y,'ko') 
+        drawnow
     end
     function llooppopup_Callback(hObject,eventdata)
         lloop_value = get(hObject,'Value');
@@ -196,14 +211,17 @@ set(fh,'Visible','on');
         
         for iterator = 1:str2double(get(numberOfRunsfield, 'String'))
             fprintf('AUTO_RUN, iterator is equal to %s\n',num2str(iterator))
-            run_ga(x, y, NIND, MAXGEN, NVAR, ELITIST, STOP_PERCENTAGE, PR_CROSS, PR_MUT, CROSSOVER, LOCALLOOP, ah1, ah2, ah3);
+            run_ga(fh,x, y, NIND, MAXGEN, NVAR, ELITIST, STOP_PERCENTAGE, PR_CROSS, PR_MUT, CROSSOVER, LOCALLOOP, ah1, ah2, ah3);
         end
         end_run();
     end
     function inputbutton_Callback(hObject,eventdata)
         [x y] = input_cities(NVAR);
-        axes(ah1);
+        %axes(ah1);
+        set(0,'currentFigure',fh) 
+        set(fh,'currentAxes',ah1)
         plot(x,y,'ko')
+        drawnow
     end
     function end_run()
         %set(ncitiesslider,'Visible','on');
