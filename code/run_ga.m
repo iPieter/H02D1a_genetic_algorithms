@@ -1,11 +1,13 @@
-function run_ga(fh,x, y, NIND, MAXGEN, NVAR, ELITIST, STOP_PERCENTAGE, PR_CROSS, PR_MUT, CROSSOVER, LOCALLOOP, ah1, ah2, ah3)
-% usage: run_ga(x, y, 
+function [minimum, gen]=run_ga(dataOuputFilePath,fh,x, y, NIND, MAXGEN, NVAR, ELITIST, STOP_PERCENTAGE, PR_CROSS, PR_MUT, CROSSOVER, LOCALLOOP, ah1, ah2, ah3)
+% usage: run_ga(pathOutputFolder,fh,x, y, 
 %               NIND, MAXGEN, NVAR, 
 %               ELITIST, STOP_PERCENTAGE, 
 %               PR_CROSS, PR_MUT, CROSSOVER, 
 %               ah1, ah2, ah3)
 %
-%
+% pathOutputFolder: Path to a folder where the testdata will be outputted
+% as cvs files.
+% fh: filehandle needed to update the charts without stealing focus.
 % x, y: coordinates of the cities
 % NIND: number of individuals
 % MAXGEN: maximal number of generations
@@ -40,6 +42,12 @@ function run_ga(fh,x, y, NIND, MAXGEN, NVAR, ELITIST, STOP_PERCENTAGE, PR_CROSS,
         % evaluate initial population
         ObjV = tspfun(Chrom,Dist);
         best=zeros(1,MAXGEN);
+        
+        %Variables that can store the histogramdata over the different
+        %generations.
+        counts_hist_all=cell(MAXGEN,1);
+        centers_hist_all=cell(MAXGEN,1);
+        
         % generational loop
         while gen<MAXGEN
             sObjV=sort(ObjV);
@@ -53,11 +61,20 @@ function run_ga(fh,x, y, NIND, MAXGEN, NVAR, ELITIST, STOP_PERCENTAGE, PR_CROSS,
                 end
             end
             
-            visualizeTSP(fh,x,y,adj2path(Chrom(t,:)), minimum, ah1, gen, best, mean_fits, worst, ah2, ObjV, NIND, ah3);
-
+            %Update the interface without stealing the focus.
+            [counts_hist,centers_hist]=visualizeTSP(fh,x,y,adj2path(Chrom(t,:)), minimum, ah1, gen, best, mean_fits, worst, ah2, ObjV, NIND, ah3);
+            
             if (sObjV(stopN)-sObjV(1) <= 1e-15)
                   break;
-            end          
+            end         
+            
+            %Keep track of histogramdata, during each generation.
+            %Note that this group of statements was put after the possible
+            %break above. That way, we save some work.
+            [resultCenters,resultCounts]=addHistogramDataToVariables(gen,centers_hist,counts_hist,centers_hist_all,counts_hist_all);
+            centers_hist_all = resultCenters;
+            counts_hist_all = resultCounts;
+            
         	%assign fitness values to entire population
         	FitnV=ranking(ObjV);
         	%select individuals for breeding
@@ -74,4 +91,39 @@ function run_ga(fh,x, y, NIND, MAXGEN, NVAR, ELITIST, STOP_PERCENTAGE, PR_CROSS,
         	%increment generation counter
         	gen=gen+1;            
         end
+        
+        %The check below was not meant to be extra safe, but to support the
+        %normal Start-button, which passes an empty String as
+        %dataOutputFilePath, and runs without creation of .csv-files.
+        if ~isempty(dataOuputFilePath) 
+            %Executed if the path specified isn't empty.
+            
+            %I chose to put the writeOutputtoCSV-function at the end
+            %(=outside of the generation while-loop), because being called
+            %for every generation whould be not so efficiënt.
+            writeOutputtoCSV(dataOuputFilePath,gen,best,mean_fits,worst,centers_hist_all,counts_hist_all);
+        end
+end
+
+function [centers_hist_all,counts_hist_all]=addHistogramDataToVariables(gen,centers_hist,counts_hist,centers_hist_all,counts_hist_all)
+    
+    %Add obtained historgram values (both centers & counts) from this run
+    %to the respective global variables.
+    centers_hist_all{gen+1,1}= strjoin(string(centers_hist),';');    
+    counts_hist_all{gen+1,1}= strjoin(string(counts_hist),';');
+end
+
+function writeOutputtoCSV(dataOuputFilePath,gen,best,mean_fits,worst,centers_hist_all,counts_hist_all)
+    
+    %Create table that can be written to .csv:
+        Min_Tour = best(1:gen)';
+        Avg_Tour = mean_fits(1:gen)';
+        Max_Tour = worst(1:gen)';
+        Histogram_Centers = centers_hist_all(1:gen,1);
+        Histogram_Counts = counts_hist_all(1:gen,1);
+        
+    tableOfResults = table(Min_Tour,Avg_Tour,Max_Tour,Histogram_Centers,Histogram_Counts);
+    
+    %Write the tableOfResults to .csv-file:
+    writetable(tableOfResults,dataOuputFilePath,'WriteVariableNames',true,'Delimiter',',');        
 end

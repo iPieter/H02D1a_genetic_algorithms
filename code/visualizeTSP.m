@@ -1,4 +1,5 @@
-    function visualizeTSP(fh, X,Y, Path, TotalDist, figNr, gen, best, mean_fits, worst, figNr2, ObjV, NIND, ah3)
+    function [counts,centers]=visualizeTSP(fh, X,Y, Path, TotalDist, figNr, gen, best, mean_fits, worst, figNr2, ObjV, NIND, ah3)
+        %Plot of best tour:
         %axes(figNr);
         set(0,'currentFigure',fh) 
         set(fh,'currentAxes',figNr)
@@ -6,23 +7,32 @@
         drawnow
         hold on;
         plot([X(Path(length(Path))) X(Path(1))],[Y(Path(length(Path))) Y(Path(1))], 'ko-','MarkerFaceColor','Black');
-        drawnow
+        drawnow;
     	title(['Beste rondrit lengte: ' num2str(TotalDist)]);
         hold off;
+        
+        %Chart best,mean,worst:
         %axes(figNr2);
-        set(0,'currentFigure',fh) 
-        set(fh,'currentAxes',figNr2)
+        set(0,'currentFigure',fh);
+        set(fh,'currentAxes',figNr2);
         plot([0:gen],best(1:gen+1),'r-', [0:gen],mean_fits(1:gen+1),'b-', [0:gen],worst(1:gen+1),'g-');
         xlabel('Generation');
         ylabel('Distance (Min. - Gem. - Max.)');       
+        
+        %Plot of histogram:
         %axes(ah3);
-        set(0,'currentFigure',fh) 
-        set(fh,'currentAxes',ah3)
-        drawnow
+        set(0,'currentFigure',fh);
+        set(fh,'currentAxes',ah3);
+        %drawnow;
         bins = max([1 ceil((max(ObjV) - min(ObjV))/0.3)]);
         limits = get(ah3,'Xlim');
         limit_b = limits(2);
-        hist(ObjV, bins);
+        
+        %The hist-plot was changed to bar-chart because then, we can reuse
+        %the '[counts,centers]'-data obtained by the hist(,).
+        [counts,centers]=hist(ObjV, bins);
+        bar(centers,counts,1,'b','EdgeColor','black' );
+        
         xlabel('Distance');
         ylabel('Number');
         limits = get(ah3,'Xlim');
