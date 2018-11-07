@@ -66,7 +66,7 @@ function [minimum, gen]=run_ga(dataOuputFilePath,fh,x, y, NIND, MAXGEN, NVAR, EL
             
             if (sObjV(stopN)-sObjV(1) <= 1e-15)
                   break;
-            end         
+            end
             
             %Keep track of histogramdata, during each generation.
             %Note that this group of statements was put after the possible
