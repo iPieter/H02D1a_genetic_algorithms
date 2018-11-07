@@ -107,9 +107,11 @@ inputParamFileBrowsebutton = uicontrol(ph,'Style','pushbutton','String','...','P
 nindslidertxt = uicontrol(ph,'Style','text','String','# Individuals','Position',[0 200 130 20]);
 nindslider = uicontrol(ph,'Style','slider','Max',1000,'Min',10,'Value',NIND,'Sliderstep',[0.001 0.05],'Position',[130 200 150 20],'Callback',@nindslider_Callback);
 nindsliderv = uicontrol(ph,'Style','text','String',NIND,'Position',[280 200 50 20]);
+enableGUItxt = uicontrol(ph,'Style','text','String','Bypass GUI (=0)','Position',[340 200 130 20],'HorizontalAlignment','left');
 genslidertxt = uicontrol(ph,'Style','text','String','# Generations','Position',[0 170 130 20]);
 genslider = uicontrol(ph,'Style','slider','Max',1000,'Min',10,'Value',MAXGEN,'Sliderstep',[0.001 0.05],'Position',[130 170 150 20],'Callback',@genslider_Callback);
 gensliderv = uicontrol(ph,'Style','text','String',MAXGEN,'Position',[280 170 50 20]);
+enableGUIfield = uicontrol(ph,'Style','edit','Position',[340 180 20 20],'TooltipString','Enable/Bypass GUI (=1/0)','String','0');
 mutslidertxt = uicontrol(ph,'Style','text','String','Pr. Mutation','Position',[0 140 130 20]);
 mutslider = uicontrol(ph,'Style','slider','Max',100,'Min',0,'Value',round(PR_MUT*100),'Sliderstep',[0.01 0.05],'Position',[130 140 150 20],'Callback',@mutslider_Callback);
 mutsliderv = uicontrol(ph,'Style','text','String',round(PR_MUT*100),'Position',[280 140 50 20]);
@@ -125,8 +127,7 @@ elapsedTimeLabeltxt = uicontrol(ph,'Style','text','String','Elapsed Time','Posit
 elapsedTimetxt = uicontrol(ph,'Style','text','String','','Position',[230 50 225 15],'HorizontalAlignment','left');
 runbutton = uicontrol(ph,'Style','pushbutton','String','START','Position',[0 10 50 30],'Callback',@runbutton_Callback);
 autorunbutton = uicontrol(ph,'Style','pushbutton','String','AUTO_RUN','Position',[360 10 80 30],'Callback',@autorunbutton_Callback);
-numberOfRunsfield = uicontrol(ph,'Style','edit','Position',[320 10 30 30]);
-set(numberOfRunsfield,'string','30');
+numberOfRunsfield = uicontrol(ph,'Style','edit','Position',[320 10 30 30],'String','30');
 testNamefield = uicontrol(ph,'Style','edit','Position',[60 10 250 30],'TooltipString','Will be used as foldername, do not input special chars.');
 set(testNamefield,'String','Enter_ShortGeneralName_For_TestSeries_(_Or_CamelCased)');
 
@@ -229,7 +230,7 @@ set(fh,'Visible','on');
         set(crossslider,'Visible','off');
         set(elitslider,'Visible','off');
         initializeElapsedTime();
-        run_ga('',fh,x, y, NIND, MAXGEN, NVAR, ELITIST, STOP_PERCENTAGE, PR_CROSS, PR_MUT, CROSSOVER, LOCALLOOP, ah1, ah2, ah3);
+        run_ga(1,'',fh,x, y, NIND, MAXGEN, NVAR, ELITIST, STOP_PERCENTAGE, PR_CROSS, PR_MUT, CROSSOVER, LOCALLOOP, ah1, ah2, ah3);
         updateElapsedTime();
         end_run();
     end
@@ -250,6 +251,10 @@ set(fh,'Visible','on');
         %This timestamp will also be concatenated to the Test-series'
         %folder name.
         autorunTimestamp = datestr(now,'yyyymmdd_HHMMSS');
+        
+        %This parameter allows to bypass the GUI (if 0) to update for faster
+        %calculations.
+        enableGUIValue = round(str2double(get(enableGUIfield, 'String')));
         
         for k = 1:size(inputParameterTable,1)
             curParameterSet = inputParameterTable(k,:)
@@ -281,7 +286,7 @@ set(fh,'Visible','on');
                 
                 %run_ga() is the call to the underlying algorithm. Note that the returned Last_Minimum_Tourlength is not necessarily
                 %the minimum tourlength, (f.e.: If there's no elitism, then the minimum might jump up again).
-                [Last_Minimum_Tourlength, Last_Generation] = run_ga(dataOuputFilePath,fh,x, y, NIND, MAXGEN, NVAR, ELITIST, STOP_PERCENTAGE, PR_CROSS, PR_MUT, CROSSOVER, LOCALLOOP, ah1, ah2, ah3);
+                [Last_Minimum_Tourlength, Last_Generation] = run_ga(enableGUIValue,dataOuputFilePath,fh,x, y, NIND, MAXGEN, NVAR, ELITIST, STOP_PERCENTAGE, PR_CROSS, PR_MUT, CROSSOVER, LOCALLOOP, ah1, ah2, ah3);
                 
                 %Stop the stopwatch:
                 Elapsed_Time= updateElapsedTime();                

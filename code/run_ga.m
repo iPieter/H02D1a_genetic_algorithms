@@ -1,4 +1,4 @@
-function [minimum, gen]=run_ga(dataOuputFilePath,fh,x, y, NIND, MAXGEN, NVAR, ELITIST, STOP_PERCENTAGE, PR_CROSS, PR_MUT, CROSSOVER, LOCALLOOP, ah1, ah2, ah3)
+function [minimum, gen]=run_ga(enableGUIValue,dataOuputFilePath,fh,x, y, NIND, MAXGEN, NVAR, ELITIST, STOP_PERCENTAGE, PR_CROSS, PR_MUT, CROSSOVER, LOCALLOOP, ah1, ah2, ah3)
 % usage: run_ga(pathOutputFolder,fh,x, y, 
 %               NIND, MAXGEN, NVAR, 
 %               ELITIST, STOP_PERCENTAGE, 
@@ -61,8 +61,18 @@ function [minimum, gen]=run_ga(dataOuputFilePath,fh,x, y, NIND, MAXGEN, NVAR, EL
                 end
             end
             
-            %Update the interface without stealing the focus.
-            [counts_hist,centers_hist]=visualizeTSP(fh,x,y,adj2path(Chrom(t,:)), minimum, ah1, gen, best, mean_fits, worst, ah2, ObjV, NIND, ah3);
+            %Update the interface without stealing the focus, and only if
+            %updating the GUI is not bypassed.
+            if (enableGUIValue > 0)
+                [counts_hist,centers_hist]=visualizeTSP(fh,x,y,adj2path(Chrom(t,:)), minimum, ah1, gen, best, mean_fits, worst, ah2, ObjV, NIND, ah3);
+            else
+                %In the else case, we should still be carefull that we
+                %obtain the [counts_hist,centers_hist]-values, so that they
+                %can be outputted.
+                bins = max([1 ceil((max(ObjV) - min(ObjV))/0.3)]);
+                [counts_hist,centers_hist]=hist(ObjV, bins);
+            end
+            
             
             if (sObjV(stopN)-sObjV(1) <= 1e-15)
                   break;
