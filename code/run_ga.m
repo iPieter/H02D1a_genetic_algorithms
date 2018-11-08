@@ -1,4 +1,4 @@
-function [minimum, gen]=run_ga(enableGUIValue,dataOuputFilePath,fh,x, y, NIND, MAXGEN, NVAR, ELITIST, STOP_PERCENTAGE, PR_CROSS, PR_MUT, CROSSOVER, LOCALLOOP, ah1, ah2, ah3)
+function [minimum, gen]=run_ga(maxCurrentCityData,enableGUIValue,dataOuputFilePath,fh,x, y, NIND, MAXGEN, NVAR, ELITIST, STOP_PERCENTAGE, PR_CROSS, PR_MUT, CROSSOVER, LOCALLOOP, ah1, ah2, ah3)
 % usage: run_ga(pathOutputFolder,fh,x, y, 
 %               NIND, MAXGEN, NVAR, 
 %               ELITIST, STOP_PERCENTAGE, 
@@ -64,17 +64,22 @@ function [minimum, gen]=run_ga(enableGUIValue,dataOuputFilePath,fh,x, y, NIND, M
             %Update the interface without stealing the focus, and only if
             %updating the GUI is not bypassed.
             if (enableGUIValue > 0)
-                [counts_hist,centers_hist]=visualizeTSP(fh,x,y,adj2path(Chrom(t,:)), minimum, ah1, gen, best, mean_fits, worst, ah2, ObjV, NIND, ah3);
+                [counts_hist,centers_hist]=visualizeTSP(maxCurrentCityData,fh,x,y,adj2path(Chrom(t,:)), minimum, ah1, gen, best, mean_fits, worst, ah2, ObjV, NIND, ah3);
             else
                 %In the else case, we should still be carefull that we
                 %obtain the [counts_hist,centers_hist]-values, so that they
-                %can be outputted.
-                bins = max([1 ceil((max(ObjV) - min(ObjV))/0.3)]);
+                %can be outputted. I tested this with some example, and
+                %this was 18,5 times faster, with the equivalent
+                %inputparameters, but updating the GUI after each
+                %generation.
+                %In the calculation of bins, maxCurrentCityData was added,
+                %otherwise you would have too much historgram centers.
+                bins = max([1 ceil((max(ObjV) - min(ObjV))/(maxCurrentCityData*0.3))]);
                 [counts_hist,centers_hist]=hist(ObjV, bins);
             end
             
             
-            if (sObjV(stopN)-sObjV(1) <= 1e-15)
+            if (sObjV(stopN)-sObjV(1) <= (1e-15*maxCurrentCityData))
                   break;
             end
             

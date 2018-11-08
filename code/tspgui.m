@@ -53,14 +53,19 @@ end
 
 % start with first dataset
 data = load(['datasets/' datasets{1}]);
-x=data(:,1)/max([data(:,1);data(:,2)]);y=data(:,2)/max([data(:,1);data(:,2)]);
+%Disable scaling in order to be able to compare with the benchmarks:
+%x=data(:,1)/max([data(:,1);data(:,2)]);y=data(:,2)/max([data(:,1);data(:,2)]);
+x=data(:,1);y=data(:,2);
+%The maximum of current city-data is still needed to estimate the number of
+%histogram-bars.
+maxCurrentCityData=max([data(:,1);data(:,2)]);
 NVAR=size(data,1);
 
 datasets
 
 disp("This shows the unscaled city-data of: "+datasets{1});
 disp(data);
-disp("This shows the scaled city-data of: "+datasets{1});
+disp("This shows the used city-data of: "+datasets{1});
 disp("X-data: ");
 disp(x);
 disp("Y-data: ");
@@ -139,13 +144,17 @@ set(fh,'Visible','on');
         dataset = datasets{dataset_value};
         % load the dataset
         data = load(['datasets/' dataset]);
-        x=data(:,1)/max([data(:,1);data(:,2)]);y=data(:,2)/max([data(:,1);data(:,2)]);
-        %x=data(:,1);y=data(:,2);
+        %Disable scaling in order to be able to compare with the benchmarks:
+        %x=data(:,1)/max([data(:,1);data(:,2)]);y=data(:,2)/max([data(:,1);data(:,2)]);
+        x=data(:,1);y=data(:,2);
+        %The maximum of current city-data is still needed to estimate the number of
+        %histogram-bars.
+        maxCurrentCityData=max([data(:,1);data(:,2)]);
         NVAR=size(data,1);
         set(ncitiessliderv,'String',size(data,1));
         disp("This shows the unscaled city-data of: "+dataset);
         disp(data);
-        disp("This shows the scaled city-data of: "+dataset);
+        disp("This shows the used city-data of: "+dataset);
         disp("X-data: ");
         disp(x);
         disp("Y-data: ");
@@ -153,7 +162,13 @@ set(fh,'Visible','on');
         %axes(ah1);
         set(0,'currentFigure',fh) 
         set(fh,'currentAxes',ah1)
-        plot(x,y,'ko') 
+        plot(x,y,'ko')
+        
+        %Histogramaxes are reset, so the next run also gives good looking
+        %results.
+        set(ah3,'Xlim',[0 1]);
+        set(ah3,'Ylim',[0 1]);
+        
         drawnow
     end
 
@@ -230,7 +245,7 @@ set(fh,'Visible','on');
         set(crossslider,'Visible','off');
         set(elitslider,'Visible','off');
         initializeElapsedTime();
-        run_ga(1,'',fh,x, y, NIND, MAXGEN, NVAR, ELITIST, STOP_PERCENTAGE, PR_CROSS, PR_MUT, CROSSOVER, LOCALLOOP, ah1, ah2, ah3);
+        run_ga(maxCurrentCityData,1,'',fh,x, y, NIND, MAXGEN, NVAR, ELITIST, STOP_PERCENTAGE, PR_CROSS, PR_MUT, CROSSOVER, LOCALLOOP, ah1, ah2, ah3);
         updateElapsedTime();
         end_run();
     end
@@ -286,7 +301,7 @@ set(fh,'Visible','on');
                 
                 %run_ga() is the call to the underlying algorithm. Note that the returned Last_Minimum_Tourlength is not necessarily
                 %the minimum tourlength, (f.e.: If there's no elitism, then the minimum might jump up again).
-                [Last_Minimum_Tourlength, Last_Generation] = run_ga(enableGUIValue,dataOuputFilePath,fh,x, y, NIND, MAXGEN, NVAR, ELITIST, STOP_PERCENTAGE, PR_CROSS, PR_MUT, CROSSOVER, LOCALLOOP, ah1, ah2, ah3);
+                [Last_Minimum_Tourlength, Last_Generation] = run_ga(maxCurrentCityData,enableGUIValue,dataOuputFilePath,fh,x, y, NIND, MAXGEN, NVAR, ELITIST, STOP_PERCENTAGE, PR_CROSS, PR_MUT, CROSSOVER, LOCALLOOP, ah1, ah2, ah3);
                 
                 %Stop the stopwatch:
                 Elapsed_Time= updateElapsedTime();                
@@ -388,9 +403,9 @@ set(fh,'Visible','on');
                 Loop_Detection={loopDetection};
                 Nmbr_Individuals = [NIND];
                 Nmbr_Generations = [MAXGEN];
-                Prob_Mutation = [PR_MUT];
-                Prob_Crossover = [PR_CROSS];
-                Pct_Elitism = [ELITIST];
+                Prob_Mutation = round([PR_MUT]*100);
+                Prob_Crossover = round([PR_CROSS]*100);
+                Pct_Elitism = round([ELITIST]*100);
                 Crossover_Type = {CROSSOVER};
                 Cust_Paramset_Description = manualParamsetDescription;
             resultTable=table(Iterations,Dataset,Loop_Detection,Nmbr_Individuals,Nmbr_Generations,Prob_Mutation,Prob_Crossover,Pct_Elitism,Crossover_Type,Cust_Paramset_Description);

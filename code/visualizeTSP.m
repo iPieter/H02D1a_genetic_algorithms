@@ -1,4 +1,4 @@
-    function [counts,centers]=visualizeTSP(fh, X,Y, Path, TotalDist, figNr, gen, best, mean_fits, worst, figNr2, ObjV, NIND, ah3)
+    function [counts,centers]=visualizeTSP(maxCurrentCityData,fh, X,Y, Path, TotalDist, figNr, gen, best, mean_fits, worst, figNr2, ObjV, NIND, ah3)
         %Plot of best tour:
         %axes(figNr);
         set(0,'currentFigure',fh) 
@@ -23,8 +23,11 @@
         %axes(ah3);
         set(0,'currentFigure',fh);
         set(fh,'currentAxes',ah3);
-        %drawnow;
-        bins = max([1 ceil((max(ObjV) - min(ObjV))/0.3)]);
+        drawnow;
+        
+        %In the calculation of bins, maxCurrentCityData was added,
+        %otherwise you would have too much historgram centers.
+        bins = max([1 ceil((max(ObjV) - min(ObjV))/(maxCurrentCityData*0.3))]);
         limits = get(ah3,'Xlim');
         limit_b = limits(2);
         
