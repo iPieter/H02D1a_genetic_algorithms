@@ -286,7 +286,7 @@ set(fh,'Visible','on');
             
             %Create the needed folderstructure where all the .csv-files
             %will be written.
-            pathOutputFolder = setupFileStructureTestSeries(k,curParameterSet,autorunTimestamp); %PrepareFolders for TestSeries.
+            pathOutputFolder = setupFileStructureTestSeries(curParameterSet,autorunTimestamp); %PrepareFolders for TestSeries.
             
             %Iterate within parameterset over the different runs requested.
             for iterator = 1:round(str2double(get(numberOfRunsfield, 'String')))
@@ -368,7 +368,7 @@ set(fh,'Visible','on');
             %In this case, the *.csv parameterinputfile was found.
             
             %Now the specified *.csv-file will be read:
-            resultTable = readtable(get(inputParamFilePathfield,'String'),'Format','%d%s%s%d%d%d%d%d%s%s','Delimiter',',','ReadVariableNames',true);
+            resultTable = readtable(get(inputParamFilePathfield,'String'),'Format','%d%d%s%s%d%d%d%d%d%s%s','Delimiter',',','ReadVariableNames',true);
             
             disp('Inputparameterdata read and stored as table:');
             disp(resultTable);
@@ -398,6 +398,7 @@ set(fh,'Visible','on');
             manualParamsetDescription = inputdlg(prompt,dialogtitle,dims,definput);
             
             %Add manually configured data to the table.
+                Paramset_Id = [1];
                 Iterations = [round(str2double(get(numberOfRunsfield, 'String')))];
                 Dataset={dataset};
                 Loop_Detection={loopDetection};
@@ -408,7 +409,7 @@ set(fh,'Visible','on');
                 Pct_Elitism = round([ELITIST]*100);
                 Crossover_Type = {CROSSOVER};
                 Cust_Paramset_Description = manualParamsetDescription;
-            resultTable=table(Iterations,Dataset,Loop_Detection,Nmbr_Individuals,Nmbr_Generations,Prob_Mutation,Prob_Crossover,Pct_Elitism,Crossover_Type,Cust_Paramset_Description);
+            resultTable=table(Paramset_Id,Iterations,Dataset,Loop_Detection,Nmbr_Individuals,Nmbr_Generations,Prob_Mutation,Prob_Crossover,Pct_Elitism,Crossover_Type,Cust_Paramset_Description);
             
             disp('Manually configured parameters stored as table:');
             disp(resultTable);
@@ -418,7 +419,7 @@ set(fh,'Visible','on');
     %Create directory where to write the testresults:
     %I chose to create this directory next to our gitrepository, so
     %that our tests don't trigger pending changes & therefore aren't checked in.
-    function folderName = setupFileStructureTestSeries(indexOfParameterset,currentParameterSet, autoRunTimestamp)
+    function folderName = setupFileStructureTestSeries(currentParameterSet, autoRunTimestamp)
         
         %Filepaths created in this program are relative to the current
         %working directory, which should be the 'code'-folder.
@@ -432,6 +433,11 @@ set(fh,'Visible','on');
         
         %Deduce name for parameterset-folder based on the the
         %inputparameters. Also, a ordinal number is added as prefix.
+        
+        disp(currentParameterSet(1,{'Paramset_Id'}));
+        cellParamset_Id = table2cell(currentParameterSet(1,{'Paramset_Id'}));
+        
+        indexOfParameterset=cellParamset_Id{1};
         paramSetSubfolder = convertParamSetToSubfolderName(indexOfParameterset);
         
         %Inside the TSP_TestOuput-folder, I create a folder for the
