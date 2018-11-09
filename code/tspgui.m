@@ -271,6 +271,13 @@ set(fh,'Visible','on');
         %calculations.
         enableGUIValue = round(str2double(get(enableGUIfield, 'String')));
         
+        %Create a table that will finally hold the test summary written to
+        %'AllParamsets_ResultsSummary.csv'
+        allParamsets_SummaryTable = table;
+        %Put this variable outside of the loop, so I can reach it after the
+        %outer for-loop to print out the general summary of summary.
+        pathOutputFolder='';
+        
         for k = 1:size(inputParameterTable,1)
             curParameterSet = inputParameterTable(k,:)
             
@@ -288,8 +295,11 @@ set(fh,'Visible','on');
             %will be written.
             pathOutputFolder = setupFileStructureTestSeries(curParameterSet,autorunTimestamp); %PrepareFolders for TestSeries.
             
+            nmbrOfRuns = round(str2double(get(numberOfRunsfield, 'String')));
+            LastMinTour_ElapsedTimeMatrix = ones(nmbrOfRuns,2)*-1;
+            
             %Iterate within parameterset over the different runs requested.
-            for iterator = 1:round(str2double(get(numberOfRunsfield, 'String')))
+            for iterator = 1:nmbrOfRuns
                 fprintf('AUTO_RUN: Current run is %s out of %s.\n',num2str(iterator),num2str(get(numberOfRunsfield,'String')));
                 
                 %Prepare filepath to write the dataoutput to:
@@ -304,7 +314,11 @@ set(fh,'Visible','on');
                 [Last_Minimum_Tourlength, Last_Generation] = run_ga(maxCurrentCityData,enableGUIValue,dataOuputFilePath,fh,x, y, NIND, MAXGEN, NVAR, ELITIST, STOP_PERCENTAGE, PR_CROSS, PR_MUT, CROSSOVER, LOCALLOOP, ah1, ah2, ah3);
                 
                 %Stop the stopwatch:
-                Elapsed_Time= updateElapsedTime();                
+                Elapsed_Time= updateElapsedTime();
+                
+                %Append the LastMinimumTourlength & ElapsedTime of this run to the
+                %LastMinTour_ElapsedTimeMatrix:
+                LastMinTour_ElapsedTimeMatrix(iterator,:) = [Last_Minimum_Tourlength,str2double(Elapsed_Time)];
                 
                 %A temporary table is created to output the StatsData more
                 %easily to StatsData_Run_%s.csv-file.
@@ -312,9 +326,32 @@ set(fh,'Visible','on');
                 
                 %A method that writes the table, given the intended
                 %filepath.
-                writeStatstoCSV(fullfile(pathOutputFolder,sprintf('StatsData_Run_%s.csv',num2str(iterator))),statsTable);
+                writeToCSV(fullfile(pathOutputFolder,sprintf('StatsData_Run_%s.csv',num2str(iterator))),statsTable);
             end
+            
+            %Line-up the statistically processed stats-data in a table:
+            processedStats = calculateStatistics(LastMinTour_ElapsedTimeMatrix);
+            
+            %Merge the curParameterSet-table with the
+            %processedStats-table:
+            mergedSummaryRecord = [curParameterSet processedStats];
+            
+            %Add this record to the overall table:
+            allParamsets_SummaryTable = [allParamsets_SummaryTable;mergedSummaryRecord];
+            
+            %After all the runs of a parameterset, we write a summary of
+            %those runs in the corresponding paramsetfolder as ParamsetResultSummary.csv. It also links the parameterset's
+            %short description text to the right subfolder.          
+            writeToCSV(fullfile(pathOutputFolder,'CurParamset_ResultsSummary.csv'),mergedSummaryRecord);
+            
         end
+        
+        %Now write the global results:
+        indcs   = strfind(pathOutputFolder,'/');
+        parentFolder = pathOutputFolder(1:indcs(end)-1); 
+        
+        writeToCSV(fullfile(parentFolder,'AllParamsets_ResultsSummary.csv'),allParamsets_SummaryTable);
+        
         %Make the hidden sliders etc visible again.
         end_run();
     end
@@ -451,11 +488,6 @@ set(fh,'Visible','on');
             %it will be created.
             mkdir(folderName)
         end
-        
-        %For now, we can already write a copy of the currentparameterset to that
-        %folder as a InputParameters.csv. It also links the parameterset's
-        %short description text to the right subfolder.
-        writetable(currentParameterSet,fullfile(folderName,'InputParameters.csv'),'WriteVariableNames',true,'Delimiter',',')        
     end
 
     function paramSetSubfolder = convertParamSetToSubfolderName(indexOfParameterset)
@@ -532,8 +564,33 @@ set(fh,'Visible','on');
         %To be extended when we have more properties.
     end
 
-    function writeStatstoCSV(statsDataFilePath,statsTable)
+    function writeToCSV(statsDataFilePath,statsTable)
         %Writes the statsTable to the specified *.csv-file:
         writetable(statsTable,statsDataFilePath,'WriteVariableNames',true,'Delimiter',','); 
+    end
+
+    function processedStats=calculateStatistics(LastMinTour_ElapsedTimeMatrix)
+            
+            %Calculate min, max, avg, stdev-values of both LastMinTour &
+            %ElapsedTime
+            
+            minCell = num2cell(min(LastMinTour_ElapsedTimeMatrix,[],1));
+            maxCell = num2cell(max(LastMinTour_ElapsedTimeMatrix,[],1));
+            avgCell = num2cell(mean(LastMinTour_ElapsedTimeMatrix,1));
+            
+            %Second argument of the std-function is 0 to divide by 'N-1' in
+            %the stddev-formula, because we consider a sample rather than
+            %the whole population.
+            stdDevCell = num2cell(std(LastMinTour_ElapsedTimeMatrix,0,1));
+            
+            %We will add this 8 columns to the record of inputparameters
+            %for this parameterset:            
+            [Min_Last_Minimum_Tourlength,Min_Elapsed_Time] = deal(minCell{:});
+            [Max_Last_Minimum_Tourlength,Max_Elapsed_Time] = deal(maxCell{:});
+            [Avg_Last_Minimum_Tourlength,Avg_Elapsed_Time] = deal(avgCell{:});
+            [StdDev_Last_Minimum_Tourlength,StdDev_Elapsed_Time] = deal(stdDevCell{:});
+            
+            %Line-up the calculated data in a table.
+            processedStats = table(Min_Last_Minimum_Tourlength,Max_Last_Minimum_Tourlength,Avg_Last_Minimum_Tourlength,StdDev_Last_Minimum_Tourlength,Min_Elapsed_Time,Max_Elapsed_Time,Avg_Elapsed_Time,StdDev_Elapsed_Time);
     end
 end
