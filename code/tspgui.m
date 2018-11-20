@@ -376,6 +376,7 @@ set(fh,'Visible','on');
 
     function initializeElapsedTime()
         set(elapsedTimetxt,'String',strcat({'Counting from: '},datestr(now,'yy/mm/dd HH:MM:SS')));
+        drawnow;
         tic; %Start/Reset timer
     end
 
