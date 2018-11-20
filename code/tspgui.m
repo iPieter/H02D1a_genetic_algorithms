@@ -13,8 +13,8 @@ PR_CROSS=.95;     % probability of crossover
 PR_MUT=.05;       % probability of mutation
 LOCALLOOP=0;      % local loop removal
 CROSSOVER = 'xalt_edges';  % default crossover operator
+MAX_CALCULATION_TIME=0;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
 % read an existing population
 % 1 -- to use the input file specified by the filename
 % 0 -- click the cities yourself, which will be saved in the file called
@@ -244,8 +244,14 @@ set(fh,'Visible','on');
         set(mutslider,'Visible','off');
         set(crossslider,'Visible','off');
         set(elitslider,'Visible','off');
+        
+        %To be sure, reassign '0' to the MAX_CALCULATION_TIME (in case it
+        %would have been modified). With value '0', the algorithm could run
+        %on like 'forever'.
+        MAX_CALCULATION_TIME = 0;
+        
         initializeElapsedTime();
-        run_ga(maxCurrentCityData,1,'',fh,x, y, NIND, MAXGEN, NVAR, ELITIST, STOP_PERCENTAGE, PR_CROSS, PR_MUT, CROSSOVER, LOCALLOOP, ah1, ah2, ah3);
+        run_ga(maxCurrentCityData,1,'',MAX_CALCULATION_TIME,fh,x, y, NIND, MAXGEN, NVAR, ELITIST, STOP_PERCENTAGE, PR_CROSS, PR_MUT, CROSSOVER, LOCALLOOP, ah1, ah2, ah3);
         updateElapsedTime();
         end_run();
     end
@@ -258,6 +264,7 @@ set(fh,'Visible','on');
          set(mutslider,'Visible','off');
          set(crossslider,'Visible','off');
          set(elitslider,'Visible','off');
+         MAX_CALCULATION_TIME = 0;
         
         %Populate the inputParameterTable either via a set of parameters or
         %just the manual parameters.
@@ -311,7 +318,7 @@ set(fh,'Visible','on');
                 
                 %run_ga() is the call to the underlying algorithm. Note that the returned Last_Minimum_Tourlength is not necessarily
                 %the minimum tourlength, (f.e.: If there's no elitism, then the minimum might jump up again).
-                [Last_Minimum_Tourlength, Last_Generation] = run_ga(maxCurrentCityData,enableGUIValue,dataOuputFilePath,fh,x, y, NIND, MAXGEN, NVAR, ELITIST, STOP_PERCENTAGE, PR_CROSS, PR_MUT, CROSSOVER, LOCALLOOP, ah1, ah2, ah3);
+                [Last_Minimum_Tourlength, Last_Generation] = run_ga(maxCurrentCityData,enableGUIValue,dataOuputFilePath,MAX_CALCULATION_TIME,fh,x, y, NIND, MAXGEN, NVAR, ELITIST, STOP_PERCENTAGE, PR_CROSS, PR_MUT, CROSSOVER, LOCALLOOP, ah1, ah2, ah3);
                 
                 %Stop the stopwatch:
                 Elapsed_Time= updateElapsedTime();
@@ -352,6 +359,7 @@ set(fh,'Visible','on');
         
         writeToCSV(fullfile(parentFolder,'AllParamsets_ResultsSummary.csv'),allParamsets_SummaryTable);
         
+        MAX_CALCULATION_TIME = 0;
         %Make the hidden sliders etc visible again.
         end_run();
     end
@@ -406,7 +414,7 @@ set(fh,'Visible','on');
             %In this case, the *.csv parameterinputfile was found.
             
             %Now the specified *.csv-file will be read:
-            resultTable = readtable(get(inputParamFilePathfield,'String'),'Format','%d%d%s%s%d%d%d%d%d%s%s','Delimiter',',','ReadVariableNames',true);
+            resultTable = readtable(get(inputParamFilePathfield,'String'),'Format','%d%d%d%s%s%d%d%d%d%d%s%s','Delimiter',',','ReadVariableNames',true);
             
             disp('Inputparameterdata read and stored as table:');
             disp(resultTable);
@@ -438,6 +446,7 @@ set(fh,'Visible','on');
             %Add manually configured data to the table.
                 Paramset_Id = [1];
                 Iterations = [round(str2double(get(numberOfRunsfield, 'String')))];
+                Max_Calculation_Time = [0];
                 Dataset={dataset};
                 Loop_Detection={loopDetection};
                 Nmbr_Individuals = [NIND];
@@ -447,7 +456,7 @@ set(fh,'Visible','on');
                 Pct_Elitism = round([ELITIST]*100);
                 Crossover_Type = {CROSSOVER};
                 Cust_Paramset_Description = manualParamsetDescription;
-            resultTable=table(Paramset_Id,Iterations,Dataset,Loop_Detection,Nmbr_Individuals,Nmbr_Generations,Prob_Mutation,Prob_Crossover,Pct_Elitism,Crossover_Type,Cust_Paramset_Description);
+            resultTable=table(Paramset_Id,Iterations,Max_Calculation_Time,Dataset,Loop_Detection,Nmbr_Individuals,Nmbr_Generations,Prob_Mutation,Prob_Crossover,Pct_Elitism,Crossover_Type,Cust_Paramset_Description);
             
             disp('Manually configured parameters stored as table:');
             disp(resultTable);
@@ -472,8 +481,9 @@ set(fh,'Visible','on');
         %Deduce name for parameterset-folder based on the the
         %inputparameters. Also, a ordinal number is added as prefix.
         
-        disp(currentParameterSet(1,{'Paramset_Id'}));
+        %disp(currentParameterSet(1,{'Paramset_Id'}));
         cellParamset_Id = table2cell(currentParameterSet(1,{'Paramset_Id'}));
+        
         
         indexOfParameterset=cellParamset_Id{1};
         paramSetSubfolder = convertParamSetToSubfolderName(indexOfParameterset);
@@ -495,7 +505,7 @@ set(fh,'Visible','on');
         %Deduce subfolder name for current parameterset based on
         %the actual parametervalues. Also, a ordinal number
         %(indexOfParameterset) is added as prefix.
-        paramSetSubfolder = sprintf('%d_I%sD%dLD%dNI%dNG%dPM%sPC%sPE%sCT%d',indexOfParameterset,get(numberOfRunsfield,'String'),NVAR,LOCALLOOP,NIND,MAXGEN,get(mutsliderv,'String'),get(crosssliderv,'String'),get(elitsliderv,'String'),get(crossoverpopup,'Value'));
+        paramSetSubfolder = sprintf('%d_I%sMCT%dD%dLD%dNI%dNG%dPM%sPC%sPE%sCT%d',indexOfParameterset,get(numberOfRunsfield,'String'),MAX_CALCULATION_TIME,NVAR,LOCALLOOP,NIND,MAXGEN,get(mutsliderv,'String'),get(crosssliderv,'String'),get(elitsliderv,'String'),get(crossoverpopup,'Value'));
     end
 
     function updateCurrentParameters(curParameterSet)
@@ -507,6 +517,11 @@ set(fh,'Visible','on');
         disp(curParameterSet(1,{'Iterations'}));
         cellIterations = table2cell(curParameterSet(1,{'Iterations'}));
         set(numberOfRunsfield,'String',(cellIterations{1}));
+        
+        %MAX_CALCULATION_TIME
+        disp(curParameterSet(1,{'Max_Calculation_Time'}));
+        cellMaxCalculationTime = table2cell(curParameterSet(1,{'Max_Calculation_Time'}));
+        MAX_CALCULATION_TIME = round((cellMaxCalculationTime{1}));
         
         %Dataset
         disp(curParameterSet(1,{'Dataset'}));
