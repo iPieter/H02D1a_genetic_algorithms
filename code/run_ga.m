@@ -1,4 +1,4 @@
-function [minimum, gen]=run_ga(maxCurrentCityData,enableGUIValue,dataOuputFilePath,fh,x, y, NIND, MAXGEN, NVAR, ELITIST, STOP_PERCENTAGE, PR_CROSS, PR_MUT, CROSSOVER, LOCALLOOP, ah1, ah2, ah3)
+function [minimum, gen]=run_ga(maxCurrentCityData,enableGUIValue,dataOuputFilePath,MAX_CALCULATION_TIME,fh,x, y, NIND, MAXGEN, NVAR, ELITIST, STOP_PERCENTAGE, PR_CROSS, PR_MUT, CROSSOVER, LOCALLOOP, ah1, ah2, ah3)
 % usage: run_ga(pathOutputFolder,fh,x, y, 
 %               NIND, MAXGEN, NVAR, 
 %               ELITIST, STOP_PERCENTAGE, 
@@ -102,6 +102,11 @@ function [minimum, gen]=run_ga(maxCurrentCityData,enableGUIValue,dataOuputFilePa
             [resultCenters,resultCounts]=addHistogramDataToVariables(gen,centers_hist,counts_hist,centers_hist_all,counts_hist_all);
             centers_hist_all = resultCenters;
             counts_hist_all = resultCounts;
+            
+            %If we have run out of time, abort further calculation
+            if (MAX_CALCULATION_TIME > 0) && ((MAX_CALCULATION_TIME+0.0) <= toc)
+                break;
+            end
             
         	%assign fitness values to entire population
         	FitnV=ranking(ObjV);
