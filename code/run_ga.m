@@ -43,6 +43,10 @@ function [minimum, gen]=run_ga(maxCurrentCityData,enableGUIValue,dataOuputFilePa
         ObjV = tspfun(Chrom,Dist);
         best=zeros(1,MAXGEN);
         
+        
+        % keep track of number of generations without improvement
+        unimprovedGenerations = 0;
+        
         %Variables that can store the histogramdata over the different
         %generations.
         counts_hist_all=cell(MAXGEN,1);
@@ -81,6 +85,15 @@ function [minimum, gen]=run_ga(maxCurrentCityData,enableGUIValue,dataOuputFilePa
             
             if (sObjV(stopN)-sObjV(1) <= (1e-15*maxCurrentCityData))
                   break;
+            end
+            
+            if (gen > 0 && best(gen) == best(gen + 1))
+                unimprovedGenerations = unimprovedGenerations + 1;
+                if (unimprovedGenerations > MAXGEN / 10)
+                    break;
+                end
+            else
+                unimprovedGenerations = 0;
             end
             
             %Keep track of histogramdata, during each generation.
