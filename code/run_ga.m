@@ -36,18 +36,21 @@ function [minimum, gen]=run_ga(maxCurrentCityData,enableGUIValue,dataOuputFilePa
         	%Chrom(row,:)=path2adj(randperm(NVAR));
             
             % random path representation
-            Chrom(row,:)=randperm(NVAR);
+            %Chrom(row,:)=randperm(NVAR);
             
             % random path representation: fixing first city because we
             % otherwise have 2N permutations to represent the same tour.
             % After this fix you will only have 2 representations of the
             % same tour, either clockwise or counterclockwise.
-            % But TODO: we should also take care of the offspring created in
+            % But we should also take care of the offspring created in
             % the generation loop, this is only the population
             % initialisation part.
-            % tempPerm = randperm(NVAR-1);
-            % Chrom(row,:) = [1,tempPerm(1,:)+1];
+             tempPerm = randperm(NVAR-1);
+             Chrom(row,:) = [1,tempPerm(1,:)+1];
         end
+        
+        Chrom = consistencyCheck(Chrom);
+        
         gen=0;
         % number of individuals of equal fitness needed to stop
         stopN=ceil(STOP_PERCENTAGE*NIND);
@@ -131,8 +134,10 @@ function [minimum, gen]=run_ga(maxCurrentCityData,enableGUIValue,dataOuputFilePa
         	ObjVSel = tspfun_path(SelCh,Dist);
             %reinsert offspring into population
         	[Chrom ObjV]=reins(Chrom,SelCh,1,1,ObjV,ObjVSel);
-            
+            %application of loopdetection-heuristic
             Chrom = tsp_ImprovePopulation(NIND, NVAR, Chrom,LOCALLOOP,Dist);
+            %make chromosomes consistent
+            Chrom = consistencyCheck(Chrom);
         	%increment generation counter
         	gen=gen+1;            
         end
@@ -171,4 +176,31 @@ function writeOutputtoCSV(dataOuputFilePath,gen,best,mean_fits,worst,centers_his
     
     %Write the tableOfResults to .csv-file:
     writetable(tableOfResults,dataOuputFilePath,'WriteVariableNames',true,'Delimiter',',');        
+end
+
+function consistentChrom = consistencyCheck(Chrom)
+    consistentChrom = zeros(size(Chrom,1),size(Chrom,2));
+    for row=1:size(Chrom,1)
+        % If a chromosome doesn't start with 1, an adequate shift operation
+        % is done.
+        consistentChrom(row,:) = (circshift(Chrom(row,:)',1-find(Chrom(row,:) == 1)))';
+        
+        % At this point we still have two rotations for each loop (clockwise &
+        % counterclockwise) to deal with that, it suffices to decide whether or
+        % not to invert the array (except for the first element == 1). Here I
+        % chose to output those representations where the second city has a
+        % smaller id than the last city in the path-representation.
+        if(consistentChrom(row,2) > consistentChrom(row,end))
+            consistentChrom(row,2:end) = fliplr(consistentChrom(row,2:end));
+        end        
+    end
+    
+    % indicesOfFirstCity = zeros(size(Chrom,1),size(Chrom,2));
+    % [indicesOfFirstCity_row, indicesOfFirstCity_col] = ;
+    
+    
+    % indicesOfFirstCity(indicesOfFirstCity_row, indicesOfFirstCity_col);
+    % consistentChrom = (circshift(Chrom', indicesOfFirstCity_col))';
+    
+    
 end
