@@ -37,6 +37,16 @@ function [minimum, gen]=run_ga(maxCurrentCityData,enableGUIValue,dataOuputFilePa
             
             % random path representation
             Chrom(row,:)=randperm(NVAR);
+            
+            % random path representation: fixing first city because we
+            % otherwise have 2N permutations to represent the same tour.
+            % After this fix you will only have 2 representations of the
+            % same tour, either clockwise or counterclockwise.
+            % But TODO: we should also take care of the offspring created in
+            % the generation loop, this is only the population
+            % initialisation part.
+            % tempPerm = randperm(NVAR-1);
+            % Chrom(row,:) = [1,tempPerm(1,:)+1];
         end
         gen=0;
         % number of individuals of equal fitness needed to stop
