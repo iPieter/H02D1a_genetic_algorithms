@@ -64,8 +64,8 @@ function [minimum, gen]=run_ga(maxCurrentCityData,enableGUIValue,dataOuputFilePa
         
         %Variables that can store the histogramdata over the different
         %generations.
-        counts_hist_all=cell(MAXGEN,1);
-        centers_hist_all=cell(MAXGEN,1);
+        %counts_hist_all=cell(MAXGEN,1);
+        %centers_hist_all=cell(MAXGEN,1);
         
         % generational loop
         while gen<MAXGEN
@@ -93,8 +93,8 @@ function [minimum, gen]=run_ga(maxCurrentCityData,enableGUIValue,dataOuputFilePa
                 %generation.
                 %In the calculation of bins, maxCurrentCityData was added,
                 %otherwise you would have too much historgram centers.
-                bins = max([1 ceil((max(ObjV) - min(ObjV))/(maxCurrentCityData*0.3))]);
-                [counts_hist,centers_hist]=hist(ObjV, bins);
+                %bins = max([1 ceil((max(ObjV) - min(ObjV))/(maxCurrentCityData*0.3))]);
+                %[counts_hist,centers_hist]=hist(ObjV, bins);
             end
             
             
@@ -114,9 +114,9 @@ function [minimum, gen]=run_ga(maxCurrentCityData,enableGUIValue,dataOuputFilePa
             %Keep track of histogramdata, during each generation.
             %Note that this group of statements was put after the possible
             %break above. That way, we save some work.
-            [resultCenters,resultCounts]=addHistogramDataToVariables(gen,centers_hist,counts_hist,centers_hist_all,counts_hist_all);
-            centers_hist_all = resultCenters;
-            counts_hist_all = resultCounts;
+            %[resultCenters,resultCounts]=addHistogramDataToVariables(gen,centers_hist,counts_hist,centers_hist_all,counts_hist_all);
+            %centers_hist_all = resultCenters;
+            %counts_hist_all = resultCounts;
             
             %If we have run out of time, abort further calculation
             if (MAX_CALCULATION_TIME > 0) && ((MAX_CALCULATION_TIME+0.0) <= toc)
@@ -145,14 +145,14 @@ function [minimum, gen]=run_ga(maxCurrentCityData,enableGUIValue,dataOuputFilePa
         %The check below was not meant to be extra safe, but to support the
         %normal Start-button, which passes an empty String as
         %dataOutputFilePath, and runs without creation of .csv-files.
-        if ~isempty(dataOuputFilePath) 
+        %if ~isempty(dataOuputFilePath) 
             %Executed if the path specified isn't empty.
             
             %I chose to put the writeOutputtoCSV-function at the end
             %(=outside of the generation while-loop), because being called
             %for every generation whould be not so efficiënt.
-            writeOutputtoCSV(dataOuputFilePath,gen,best,mean_fits,worst,centers_hist_all,counts_hist_all);
-        end
+            %writeOutputtoCSV(dataOuputFilePath,gen,best,mean_fits,worst,centers_hist_all,counts_hist_all);
+        %end
 end
 
 function [centers_hist_all,counts_hist_all]=addHistogramDataToVariables(gen,centers_hist,counts_hist,centers_hist_all,counts_hist_all)
@@ -193,14 +193,5 @@ function consistentChrom = consistencyCheck(Chrom)
         if(consistentChrom(row,2) > consistentChrom(row,end))
             consistentChrom(row,2:end) = fliplr(consistentChrom(row,2:end));
         end        
-    end
-    
-    % indicesOfFirstCity = zeros(size(Chrom,1),size(Chrom,2));
-    % [indicesOfFirstCity_row, indicesOfFirstCity_col] = ;
-    
-    
-    % indicesOfFirstCity(indicesOfFirstCity_row, indicesOfFirstCity_col);
-    % consistentChrom = (circshift(Chrom', indicesOfFirstCity_col))';
-    
-    
+    end    
 end
