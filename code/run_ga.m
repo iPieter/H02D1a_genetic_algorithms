@@ -74,15 +74,17 @@ function [minimum, gen]=run_ga(maxCurrentCityData,enableGUIValue,dataOuputFilePa
         	minimum=best(gen+1);
             mean_fits(gen+1)=mean(ObjV);
             worst(gen+1)=max(ObjV);
-            for t=1:size(ObjV,1)
-                if (ObjV(t)==minimum)
-                    break;
-                end
-            end
             
             %Update the interface without stealing the focus, and only if
             %updating the GUI is not bypassed.
             if (enableGUIValue > 0)
+                % Obtain location of best==minimum-tour in the Chrom-array.
+                for t=1:size(ObjV,1)
+                    if (ObjV(t)==minimum)
+                        break;
+                    end
+                end
+                
                 [counts_hist,centers_hist]=visualizeTSP(maxCurrentCityData,fh,x,y,Chrom(t,:), minimum, ah1, gen, best, mean_fits, worst, ah2, ObjV, NIND, ah3);
             else
                 %In the else case, we should still be carefull that we
