@@ -51,6 +51,14 @@ function [minimum, gen]=run_ga(maxCurrentCityData,enableGUIValue,dataOuputFilePa
         
         Chrom = consistencyCheck(Chrom);
         
+        % I need a deep copy of Chrom, I tested that code below obtains a
+        % deep copy:
+        previousChrom(:,:) = Chrom(:,:);
+        
+        % A vector is even more performant that a map-object, given that the keys are
+        % just numbers (indexes in the Chrom-array).
+        indexToAgeMap = zeros(size(Chrom,1),1);
+        
         gen=0;
         % number of individuals of equal fitness needed to stop
         stopN=ceil(STOP_PERCENTAGE*NIND);
@@ -134,14 +142,36 @@ function [minimum, gen]=run_ga(maxCurrentCityData,enableGUIValue,dataOuputFilePa
             SelCh=mutateTSP('inversion_variant',SelCh,PR_MUT);
             %evaluate offspring, call objective function
         	ObjVSel = tspfun_path(SelCh,Dist);
-            %reinsert offspring into population
-        	[Chrom ObjV]=reins(Chrom,SelCh,1,1,ObjV,ObjVSel);
+            %reinsert offspring into population, we pass previousChrom and
+            %indexToAgeMap along, because the reins method will change
+            % their order.
+            [previousChrom, indexToAgeMap, Chrom, ObjV]=reins(Chrom,SelCh,1,(2),ObjV,ObjVSel,previousChrom, indexToAgeMap);
+            % Like below it would use fitness based selection:
+            % [Chrom ObjV]=reins(Chrom,SelCh,1,(1),ObjV,ObjVSel);
             %application of loopdetection-heuristic
             Chrom = tsp_ImprovePopulation(NIND, NVAR, Chrom,LOCALLOOP,Dist);
             %make chromosomes consistent
             Chrom = consistencyCheck(Chrom);
+            
+            % Check which chromosomes stayed intact from previous
+            % generation.                
+            for row=1:size(Chrom,1)
+                
+                if (chromosomePreserved(previousChrom(row,:),Chrom(row,:)))
+                    % increment the age:
+                    indexToAgeMap(row,1) = indexToAgeMap(row,1) + 1;
+                else
+                    % reset the age:
+                    indexToAgeMap(row,1) = 0;
+                end
+            end
+            
+            % Current Chrom becomes previousChrom for next generation:
+            % I tested that the code below makes it a deep copy.
+            previousChrom(:,:) = Chrom(:,:);
+            
         	%increment generation counter
-        	gen=gen+1;            
+        	gen=gen+1;
         end
         
         %The check below was not meant to be extra safe, but to support the
@@ -155,6 +185,19 @@ function [minimum, gen]=run_ga(maxCurrentCityData,enableGUIValue,dataOuputFilePa
             %for every generation whould be not so efficiënt.
             %writeOutputtoCSV(dataOuputFilePath,gen,best,mean_fits,worst,centers_hist_all,counts_hist_all);
         %end
+end
+
+function preserved = chromosomePreserved(prevChrom,currChrom)
+    preserved = true;
+    idx = 1;
+    
+    %As soon as a difference is spotted, return that they don't match.
+    while(idx <= size(currChrom,2) && preserved)
+        if(prevChrom(1,idx) ~= currChrom(1,idx))
+            preserved = false;
+        end
+        idx = idx +1;
+    end
 end
 
 function [centers_hist_all,counts_hist_all]=addHistogramDataToVariables(gen,centers_hist,counts_hist,centers_hist_all,counts_hist_all)

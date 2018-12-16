@@ -15,6 +15,7 @@
 %                ExOpt(1): Select - number indicating kind of insertion
 %                          0 - uniform insertion
 %                          1 - fitness-based insertion
+%                          2 - age-based insertion                
 %                          if omitted or NaN, 0 is assumed
 %                ExOpt(2): INSR - Rate of offspring to be inserted per
 %                          subpopulation (% of subpopulation)
@@ -39,8 +40,12 @@
 % History:    10.03.94     file created
 %             19.03.94     parameter checking improved
 
-function [Chrom, ObjVCh] = reins(Chrom, SelCh, SUBPOP, InsOpt, ObjVCh, ObjVSel);
+function [previousChrom, indexToAgeMap, Chrom, ObjVCh] = reins(Chrom, SelCh, SUBPOP, InsOpt, ObjVCh, ObjVSel,previousChrom, indexToAgeMap);
 
+% Below, a constant is defined, used when age-based survival is chosen. The
+% parameter below is expressed in amount of generations that an indivual
+% maximally can survive.
+terminalAgeThreshold = 1;
 
 % Check parameter consistency
    if nargin < 2, error('Not enough input parameter'); end
@@ -91,17 +96,24 @@ function [Chrom, ObjVCh] = reins(Chrom, SelCh, SUBPOP, InsOpt, ObjVCh, ObjVSel);
    
    if (INSR < 0 | INSR > 1), error('Parameter for insertion rate must be a scalar in [0, 1]'); end
    if (INSR < 1 & IsObjVSel ~= 1), error('For selection of offspring ObjVSel is needed'); end 
-   if (Select ~= 0 & Select ~= 1), error('Parameter for selection method must be 0 or 1'); end
+   if (Select ~= 0 & Select ~= 1 & Select ~= 2), error('Parameter for selection method must be 0 or 1'); end
    if (Select == 1 & IsObjVCh == 0), error('ObjVCh for fitness-based exchange needed'); end
 
    if INSR == 0, return; end
-   NIns = min(max(floor(INSR*NSEL+.5),1),NIND);   % Number of offspring to insert   
+   NIns = min(max(floor(INSR*NSEL+.5),1),NIND);   % Number of offspring to insert
+   % When age-based selection is chosen, this number will depend on the age
+   % from which you want to kick them out.
+   if Select == 2
+       NIns = min(sum(indexToAgeMap(:,1) > terminalAgeThreshold), NIns);
+   end
 
 % perform insertion for each subpopulation
    for irun = 1:SUBPOP,
       % Calculate positions in old subpopulation, where offspring are inserted
          if Select == 1,    % fitness-based reinsertion
             [Dummy, ChIx] = sort(-ObjVCh((irun-1)*NIND+1:irun*NIND));
+         elseif Select ==2
+             ChIx = randomSelectTooOldInd(indexToAgeMap, NIns, terminalAgeThreshold);
          else               % uniform reinsertion
             [Dummy, ChIx] = sort(rand(NIND,1));
          end
@@ -117,6 +129,17 @@ function [Chrom, ObjVCh] = reins(Chrom, SelCh, SUBPOP, InsOpt, ObjVCh, ObjVSel);
          Chrom(PopIx,:) = SelCh(SelIx,:);
          if (IsObjVCh == 1 & IsObjVSel == 1), ObjVCh(PopIx) = ObjVSel(SelIx); end
    end
+end
 
-
-% End of function
+function indexList=randomSelectTooOldInd(indexToAgeMap, NIns, terminalAgeThreshold)
+    % Return list of random indexes that are to old
+    k=1;
+    indexList = zeros(NIns,1);
+    while(k <= NIns)
+        randIndex = randi([1, size(indexToAgeMap,1)]);
+        if(indexToAgeMap(randIndex) > terminalAgeThreshold && isempty(find(indexList == randIndex)))
+            indexList(k,1) = randIndex;
+            k = k + 1;
+        end
+    end
+end
