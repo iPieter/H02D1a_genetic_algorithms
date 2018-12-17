@@ -1,0 +1,4 @@
+Paramset_Id,Iterations,Max_Calculation_Time,Dataset,Loop_Detection,Nmbr_Individuals,Nmbr_Generations,Prob_Mutation,Prob_Crossover,Pct_Elitism,Crossover_Type,Cust_Paramset_Description,Min_Last_Minimum_Tourlength,Max_Last_Minimum_Tourlength,Avg_Last_Minimum_Tourlength,StdDev_Last_Minimum_Tourlength,Min_Elapsed_Time,Max_Elapsed_Time,Avg_Elapsed_Time,StdDev_Elapsed_Time
+0,30,5,BM2_xqf131_564.tsp,on,100,10000,45,15,5,xalt_edges,,861.512417248958,1008.10226117723,956.181902820649,36.2445905075566,5.0286,5.1266,5.04658666666667,0.0183062027048556
+1,30,60,BM2_xqf131_564.tsp,on,100,10000,45,15,5,xalt_edges,,605.823912963511,654.253521713769,631.074855165744,12.8767450551173,60.2142,60.5441,60.25389,0.0631408898061887
+2,30,3600,BM2_xqf131_564.tsp,on,100,10000,45,15,5,xalt_edges,,593.01028359432,643.340360856324,614.006618169975,12.4776923579337,98.8582,307.5663,150.9109,53.5270973459495
