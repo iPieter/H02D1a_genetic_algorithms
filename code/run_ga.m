@@ -33,14 +33,26 @@ function [minimum, gen]=run_ga(maxCurrentCityData,enableGUIValue,dataOuputFilePa
         % initialize population
         Chrom=zeros(NIND,NVAR);
         for row=1:NIND
-        	Chrom(row,:)=path2adj(randperm(NVAR));
-            %Chrom(row,:)=randperm(NVAR);
+        	%Chrom(row,:)=path2adj(randperm(NVAR));
+            
+            % random path representation
+            Chrom(row,:)=randperm(NVAR);
+            
+            % random path representation: fixing first city because we
+            % otherwise have 2N permutations to represent the same tour.
+            % After this fix you will only have 2 representations of the
+            % same tour, either clockwise or counterclockwise.
+            % But TODO: we should also take care of the offspring created in
+            % the generation loop, this is only the population
+            % initialisation part.
+            % tempPerm = randperm(NVAR-1);
+            % Chrom(row,:) = [1,tempPerm(1,:)+1];
         end
         gen=0;
         % number of individuals of equal fitness needed to stop
         stopN=ceil(STOP_PERCENTAGE*NIND);
         % evaluate initial population
-        ObjV = tspfun(Chrom,Dist);
+        ObjV = tspfun_path(Chrom,Dist);
         best=zeros(1,MAXGEN);
         
         
@@ -68,7 +80,7 @@ function [minimum, gen]=run_ga(maxCurrentCityData,enableGUIValue,dataOuputFilePa
             %Update the interface without stealing the focus, and only if
             %updating the GUI is not bypassed.
             if (enableGUIValue > 0)
-                [counts_hist,centers_hist]=visualizeTSP(maxCurrentCityData,fh,x,y,adj2path(Chrom(t,:)), minimum, ah1, gen, best, mean_fits, worst, ah2, ObjV, NIND, ah3);
+                [counts_hist,centers_hist]=visualizeTSP(maxCurrentCityData,fh,x,y,Chrom(t,:), minimum, ah1, gen, best, mean_fits, worst, ah2, ObjV, NIND, ah3);
             else
                 %In the else case, we should still be carefull that we
                 %obtain the [counts_hist,centers_hist]-values, so that they
@@ -113,10 +125,10 @@ function [minimum, gen]=run_ga(maxCurrentCityData,enableGUIValue,dataOuputFilePa
         	%select individuals for breeding
         	SelCh=select('sus', Chrom, FitnV, GGAP);
         	%recombine individuals (crossover)
-            SelCh = recombin(CROSSOVER,SelCh,PR_CROSS);
-            SelCh=mutateTSP('inversion',SelCh,PR_MUT);
+            SelCh = recombin('er',SelCh,PR_CROSS);
+            SelCh=mutateTSP('inversion_variant',SelCh,PR_MUT);
             %evaluate offspring, call objective function
-        	ObjVSel = tspfun(SelCh,Dist);
+        	ObjVSel = tspfun_path(SelCh,Dist);
             %reinsert offspring into population
         	[Chrom ObjV]=reins(Chrom,SelCh,1,1,ObjV,ObjVSel);
             
