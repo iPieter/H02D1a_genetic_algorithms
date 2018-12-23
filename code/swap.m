@@ -5,7 +5,7 @@
 %	2 : path representation
 %
 
-function NewChrom = inversion(OldChrom,Representation)
+function NewChrom = swap(OldChrom,Representation)
 
     NewChrom=OldChrom;
 
@@ -22,7 +22,10 @@ function NewChrom = inversion(OldChrom,Representation)
     end
     rndi = sort(rndi);
 
-    NewChrom(rndi(1):rndi(2)) = NewChrom(rndi(2):-1:rndi(1));
+    buffer=NewChrom(rndi(1));
+    NewChrom(rndi(1))=NewChrom(rndi(2));
+    NewChrom(rndi(2))=buffer;
+
 
     if Representation==1
         NewChrom=path2adj(NewChrom);
