@@ -306,7 +306,7 @@ set(fh,'Visible','on');
             
             %Iterate within parameterset over the different runs requested.
             for iterator = 1:nmbrOfRuns
-                fprintf('AUTO_RUN: Current run is %s out of %s.\n',num2str(iterator),num2str(get(numberOfRunsfield,'String')));
+                % fprintf('AUTO_RUN: Current run is %s out of %s.\n',num2str(iterator),num2str(get(numberOfRunsfield,'String')));
                 
                 %Prepare filepath to write the dataoutput to:
                 dataOuputFilePath = fullfile(pathOutputFolder,sprintf('Dataoutput_Run_%s.csv',num2str(iterator)));

@@ -74,7 +74,7 @@ function [minimum, gen]=run_ga(maxCurrentCityData,enableGUIValue,dataOuputFilePa
         %generations.
         %counts_hist_all=cell(MAXGEN,1);
         %centers_hist_all=cell(MAXGEN,1);
-        
+                
         % generational loop
         while gen<MAXGEN
             sObjV=sort(ObjV);
@@ -139,7 +139,8 @@ function [minimum, gen]=run_ga(maxCurrentCityData,enableGUIValue,dataOuputFilePa
         	SelCh=select('sus', Chrom, FitnV, GGAP);
         	%recombine individuals (crossover)
             SelCh = recombin('er',SelCh,PR_CROSS);
-            SelCh=mutateTSP('inversion_variant',SelCh,PR_MUT);
+            SelCh = mutateTSP('inversion_variant',SelCh,PR_MUT, NVAR - 2);
+            SelCh = sa(SelCh, Dist);
             %evaluate offspring, call objective function
         	ObjVSel = tspfun_path(SelCh,Dist);
             %reinsert offspring into population, we pass previousChrom and

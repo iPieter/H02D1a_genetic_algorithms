@@ -7,7 +7,7 @@
 %	2 : path representation
 %
 
-function NewChrom = inversion_variant(OldChrom,Representation)
+function NewChrom = inversion_variant(OldChrom,Representation, UpperboundSubtourLength)
 
     % NewChrom=OldChrom;
     cities = size(OldChrom,2);
@@ -20,7 +20,7 @@ function NewChrom = inversion_variant(OldChrom,Representation)
     % Select two positions in the tour, by selecting starting pos and
     % length, that way the subtour can spread accross the array boundaries.
     subtourStartPos = randi([1,cities]);
-    subtourLength = randi([1,cities-2]); % a subtour of the complete tour doesn't make sense, but -1 is trivial as well.
+    subtourLength = randi([1,min(cities-2, UpperboundSubtourLength)]); % a subtour of the complete tour doesn't make sense, but -1 is trivial as well.
     
     subtourEndPos = mod((subtourStartPos+subtourLength-1),cities);
     
