@@ -167,7 +167,7 @@ function [minimum, gen]=run_ga(maxCurrentCityData,enableGUIValue,dataOuputFilePa
             end
             
             % Current Chrom becomes previousChrom for next generation:
-            % I tested that the code below makes it a deep copy.
+            %I tested that the code below makes it a deep copy.
             previousChrom(:,:) = Chrom(:,:);
             
         	%increment generation counter
