@@ -10,10 +10,10 @@ function best = sa(x, Dist)
     while (T > 1.0)
         % Take a deep copy:
         n = output;
-        for i=0:T/T_max*size(output,2)
-            % Depending on temperature, apply some mutations:
-            n = mutateTSP('swap', n, 1.0);
-        end
+        
+        % Depending on temperature, apply mutation with decreasing probability:
+        n = mutateTSP('inversion_variant', n, T/T_max,max(floor(0.10*size(output,2)), 5));
+        
         f_new = tspfun_path(n,Dist);
         f_old = tspfun_path(output,Dist);
         for row=1:size(n,1)
