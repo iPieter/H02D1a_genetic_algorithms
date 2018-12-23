@@ -8,17 +8,20 @@ function best = sa(x, Dist)
     T = T_max;
     alpha = 0.9;
     while (T > 1.0)
+        % Take a deep copy:
+        n = output;
         for i=0:T/T_max*size(output,2)
-            n = mutateTSP('swap',output, 1.0);
+            % Depending on temperature, apply some mutations:
+            n = mutateTSP('swap', n, 1.0);
         end
         f_new = tspfun_path(n,Dist);
         f_old = tspfun_path(output,Dist);
         for row=1:size(n,1)
-            E = exp((f_new(row) - f_old(row))/T);
-            if (f_new(row) < f_old(row))
+            E = exp((f_old(row) - f_new(row))/T);
+            if (f_new(row) <= f_old(row))
                output(row,:) = n(row,:); 
                
-               if f_new(row) < f_best(row)
+               if f_new(row) <= f_best(row)
                   f_best(row) = f_new(row);
                   best(row,:) = n(row,:); 
                end
