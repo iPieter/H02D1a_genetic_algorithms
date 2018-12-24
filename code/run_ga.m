@@ -57,7 +57,9 @@ function [minimum, gen]=run_ga(maxCurrentCityData,enableGUIValue,dataOuputFilePa
         
         % A vector is even more performant that a map-object, given that the keys are
         % just numbers (indexes in the Chrom-array).
-        indexToAgeMap = zeros(size(Chrom,1),1);
+        % indexToAgeMap = zeros(size(Chrom,1),1);
+        % The alternative below starts from random ages.
+        indexToAgeMap = randi([0,6],size(Chrom,1),1)
         
         gen=0;
         % number of individuals of equal fitness needed to stop

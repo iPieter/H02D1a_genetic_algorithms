@@ -45,7 +45,7 @@ function [previousChrom, indexToAgeMap, Chrom, ObjVCh] = reins(Chrom, SelCh, SUB
 % Below, a constant is defined, used when age-based survival is chosen. The
 % parameter below is expressed in amount of generations that an indivual
 % maximally can survive.
-terminalAgeThreshold = 1;
+terminalAgeThreshold = 3;
 
 % Check parameter consistency
    if nargin < 2, error('Not enough input parameter'); end
@@ -100,7 +100,11 @@ terminalAgeThreshold = 1;
    if (Select == 1 & IsObjVCh == 0), error('ObjVCh for fitness-based exchange needed'); end
 
    if INSR == 0, return; end
-   NIns = min(max(floor(INSR*NSEL+.5),1),NIND);   % Number of offspring to insert
+   NIns = min(max(floor(INSR*NSEL+.5),1),NIND);
+   %ListEliteIndices = zeros((size(Chrom,2)-size(SelCh,2)),1);
+   ListEliteIndices = whichIndividualsAreSavedByElitism(ObjVCh, NIND,(size(Chrom,1)-size(SelCh,1)))
+   
+   % Number of offspring to insert
    % When age-based selection is chosen, this number will depend on the age
    % from which you want to kick them out.
    if Select == 2
@@ -113,10 +117,11 @@ terminalAgeThreshold = 1;
          if Select == 1,    % fitness-based reinsertion
             [Dummy, ChIx] = sort(-ObjVCh((irun-1)*NIND+1:irun*NIND));
          elseif Select ==2
-             ChIx = randomSelectTooOldInd(indexToAgeMap, NIns, terminalAgeThreshold);
+             [compensatedNIns, ChIx] = randomSelectTooOldInd(indexToAgeMap, NIns, terminalAgeThreshold, ListEliteIndices);
          else               % uniform reinsertion
             [Dummy, ChIx] = sort(rand(NIND,1));
          end
+         NIns = compensatedNIns;
          PopIx = ChIx((1:NIns)')+ (irun-1)*NIND;
       % Calculate position of Nins-% best offspring
          if (NIns < NSEL),  % select best offspring
@@ -131,15 +136,32 @@ terminalAgeThreshold = 1;
    end
 end
 
-function indexList=randomSelectTooOldInd(indexToAgeMap, NIns, terminalAgeThreshold)
+function indexList=whichIndividualsAreSavedByElitism(ObjVCh, NIND,numberOfElite)
+    [Dummy, ChIx] = sort(ObjVCh(1:NIND));
+    % indexList = zeros(numberOfElite,1)
+    
+    indexList = ChIx(1:numberOfElite,1)
+end
+
+function [compensatedNIns, indexList]=randomSelectTooOldInd(indexToAgeMap, NIns, terminalAgeThreshold, ListEliteIndices)
     % Return list of random indexes that are to old
-    k=1;
+    idx=1;
+    ridx=1;
     indexList = zeros(NIns,1);
-    while(k <= NIns)
-        randIndex = randi([1, size(indexToAgeMap,1)]);
-        if(indexToAgeMap(randIndex) > terminalAgeThreshold && isempty(find(indexList == randIndex)))
-            indexList(k,1) = randIndex;
-            k = k + 1;
+    
+    randomPermList = randperm(size(indexToAgeMap,1));
+    
+    while (ridx <= size(indexToAgeMap,1))
+        if(indexToAgeMap(randomPermList(1, ridx),1) > terminalAgeThreshold && isempty(find(ListEliteIndices == randomPermList(1, ridx))))
+            indexList(idx,1) = randomPermList(1, ridx);
+            idx = idx + 1;
         end
+        ridx = ridx + 1;
     end
+    
+     % If some individual has passed the thresholdage but was saved at the
+     % same time by elitism, this method will pass a zero to its invokation
+     % and there it will, crash, a compensated NIns should bypass that
+     % problem.
+     compensatedNIns = NIns - sum(indexList(:,1) == zeros(NIns,1))
 end
