@@ -130,7 +130,7 @@ function [minimum, gen]=run_ga(maxCurrentCityData,enableGUIValue,dataOuputFilePa
         	%select individuals for breeding
         	SelCh=select('sus', Chrom, FitnV, GGAP);
         	%recombine individuals (crossover)
-            SelCh = recombin('er',SelCh,PR_CROSS);
+            SelCh = recombin('scx',SelCh,PR_CROSS, Dist, 1);
             SelCh = mutateTSP('inversion_variant',SelCh,PR_MUT, NVAR - 2);
             SelCh = sa(SelCh, Dist);
             %evaluate offspring, call objective function
