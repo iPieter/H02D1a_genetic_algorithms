@@ -61,15 +61,14 @@ x=data(:,1);y=data(:,2);
 maxCurrentCityData=max([data(:,1);data(:,2)]);
 NVAR=size(data,1);
 
-datasets
-
-disp("This shows the unscaled city-data of: "+datasets{1});
-disp(data);
-disp("This shows the used city-data of: "+datasets{1});
-disp("X-data: ");
-disp(x);
-disp("Y-data: ");
-disp(y);
+% datasets
+% disp("This shows the unscaled city-data of: "+datasets{1});
+% disp(data);
+% disp("This shows the used city-data of: "+datasets{1});
+% disp("X-data: ");
+% disp(x);
+% disp("Y-data: ");
+% disp(y);
 
 crossoverTypes = {'xalt_edges','something_else'};
 
@@ -152,13 +151,13 @@ set(fh,'Visible','on');
         maxCurrentCityData=max([data(:,1);data(:,2)]);
         NVAR=size(data,1);
         set(ncitiessliderv,'String',size(data,1));
-        disp("This shows the unscaled city-data of: "+dataset);
-        disp(data);
-        disp("This shows the used city-data of: "+dataset);
-        disp("X-data: ");
-        disp(x);
-        disp("Y-data: ");
-        disp(y);
+        % disp("This shows the unscaled city-data of: "+dataset);
+        % disp(data);
+        % disp("This shows the used city-data of: "+dataset);
+        % disp("X-data: ");
+        % disp(x);
+        % disp("Y-data: ");
+        % disp(y);
         %axes(ah1);
         set(0,'currentFigure',fh) 
         set(fh,'currentAxes',ah1)
@@ -307,7 +306,7 @@ set(fh,'Visible','on');
             
             %Iterate within parameterset over the different runs requested.
             for iterator = 1:nmbrOfRuns
-                fprintf('AUTO_RUN: Current run is %s out of %s.\n',num2str(iterator),num2str(get(numberOfRunsfield,'String')));
+                % fprintf('AUTO_RUN: Current run is %s out of %s.\n',num2str(iterator),num2str(get(numberOfRunsfield,'String')));
                 
                 %Prepare filepath to write the dataoutput to:
                 dataOuputFilePath = fullfile(pathOutputFolder,sprintf('Dataoutput_Run_%s.csv',num2str(iterator)));
@@ -416,8 +415,8 @@ set(fh,'Visible','on');
             %Now the specified *.csv-file will be read:
             resultTable = readtable(get(inputParamFilePathfield,'String'),'Format','%d%d%d%s%s%d%d%d%d%d%s%s','Delimiter',',','ReadVariableNames',true);
             
-            disp('Inputparameterdata read and stored as table:');
-            disp(resultTable);
+            % disp('Inputparameterdata read and stored as table:');
+            % disp(resultTable);
         else
             %Extract the propertyvalues from the sliders and other
             %properties from the panel, because no (valid) *.csv-file was given.
@@ -458,8 +457,8 @@ set(fh,'Visible','on');
                 Cust_Paramset_Description = manualParamsetDescription;
             resultTable=table(Paramset_Id,Iterations,Max_Calculation_Time,Dataset,Loop_Detection,Nmbr_Individuals,Nmbr_Generations,Prob_Mutation,Prob_Crossover,Pct_Elitism,Crossover_Type,Cust_Paramset_Description);
             
-            disp('Manually configured parameters stored as table:');
-            disp(resultTable);
+            % disp('Manually configured parameters stored as table:');
+            % disp(resultTable);
         end
     end
 
@@ -510,21 +509,21 @@ set(fh,'Visible','on');
 
     function updateCurrentParameters(curParameterSet)
         
-        disp('Updating current parameters to values below:');
-        disp('============================================');
+        % disp('Updating current parameters to values below:');
+        % disp('============================================');
         
         %Iterations
-        disp(curParameterSet(1,{'Iterations'}));
+        % disp(curParameterSet(1,{'Iterations'}));
         cellIterations = table2cell(curParameterSet(1,{'Iterations'}));
         set(numberOfRunsfield,'String',(cellIterations{1}));
         
         %MAX_CALCULATION_TIME
-        disp(curParameterSet(1,{'Max_Calculation_Time'}));
+        % disp(curParameterSet(1,{'Max_Calculation_Time'}));
         cellMaxCalculationTime = table2cell(curParameterSet(1,{'Max_Calculation_Time'}));
         MAX_CALCULATION_TIME = round((cellMaxCalculationTime{1}));
         
         %Dataset
-        disp(curParameterSet(1,{'Dataset'}));
+        % disp(curParameterSet(1,{'Dataset'}));
         cellDatasetValue = table2cell(curParameterSet(1,{'Dataset'}));
         dataSetIndex = find(strcmp(datasets,cellDatasetValue));
         %disp(datasets);
@@ -534,44 +533,44 @@ set(fh,'Visible','on');
         datasetpopup_Callback(datasetpopup,emptyEventdata);
         
         %Loop_Detection
-        disp(curParameterSet(1,{'Loop_Detection'}));
+        % disp(curParameterSet(1,{'Loop_Detection'}));
         cellLoopDetection = table2cell(curParameterSet(1,{'Loop_Detection'}));
         loopDetectionIndex = find(strcmp({'off','on'},cellLoopDetection));
         set(llooppopup,'Value',loopDetectionIndex);
         llooppopup_Callback(llooppopup,emptyEventdata);
         
         %Nmbr_Individuals
-        disp(curParameterSet(1,{'Nmbr_Individuals'}));
+        % disp(curParameterSet(1,{'Nmbr_Individuals'}));
         cellnmbrIndividuals = table2cell(curParameterSet(1,{'Nmbr_Individuals'}));
         set(nindslider,'Value',(cellnmbrIndividuals{1}));
         nindslider_Callback(nindslider,emptyEventdata);
         
         %Nmbr_Generations
-        disp(curParameterSet(1,{'Nmbr_Generations'}));
+        % disp(curParameterSet(1,{'Nmbr_Generations'}));
         cellnmbrGenerations = table2cell(curParameterSet(1,{'Nmbr_Generations'}));
         set(genslider,'Value',(cellnmbrGenerations{1}));
         genslider_Callback(genslider,emptyEventdata)
         
         %Prob_Mutation
-        disp(curParameterSet(1,{'Prob_Mutation'}));
+        % disp(curParameterSet(1,{'Prob_Mutation'}));
         cellprobMutations = table2cell(curParameterSet(1,{'Prob_Mutation'}));
         set(mutslider,'Value',(cellprobMutations{1}));
         mutslider_Callback(mutslider,emptyEventdata)
         
         %Prob_Crossover
-        disp(curParameterSet(1,{'Prob_Crossover'}));
+        % disp(curParameterSet(1,{'Prob_Crossover'}));
         cellprobCrossover = table2cell(curParameterSet(1,{'Prob_Crossover'}));
         set(crossslider,'Value',(cellprobCrossover{1}));
         crossslider_Callback(crossslider,emptyEventdata)
         
         %Pct_Elitism
-        disp(curParameterSet(1,{'Pct_Elitism'}));
+        % disp(curParameterSet(1,{'Pct_Elitism'}));
         cellpctElitism = table2cell(curParameterSet(1,{'Pct_Elitism'}));
         set(elitslider,'Value',(cellpctElitism{1}));
         elitslider_Callback(elitslider,emptyEventdata)
         
         %Crossover_Type
-        disp(curParameterSet(1,{'Crossover_Type'}));
+        % disp(curParameterSet(1,{'Crossover_Type'}));
         cellcrossoverType = table2cell(curParameterSet(1,{'Crossover_Type'}));
         crossoverTypeIndex = find(strcmp(crossoverTypes,cellcrossoverType));
         set(crossoverpopup,'Value',crossoverTypeIndex);
