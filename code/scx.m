@@ -27,10 +27,10 @@ if nargin < 2, XOVR = NaN; end
    if rem(rows,2)~=0
 	   maxrows=maxrows-1;
    end
-   %NewChrom = zeros(size;
+   
+   NewChrom = OldChrom;
    for row=1:2:maxrows
-	
-     	% crossover of the two chromosomes
+    % crossover of the two chromosomes
    	% results in 2 offsprings
 	if rand<XOVR			% recombine with a given probability
 		NewChrom(row,:) =cross_scx([OldChrom(row,:);OldChrom(row+1,:)], Dist);
